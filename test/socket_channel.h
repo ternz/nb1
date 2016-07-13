@@ -13,6 +13,7 @@
 
 #ifndef SOCKET_CHANNEL_H
 #define SOCKET_CHANNEL_H
+#include <pthread.h>
 #include <map>
 #include "common/blocking_queue.h"
 #include "packet.h"
@@ -26,11 +27,20 @@ public:
 	~SocketChannel();
 	int AddConnection(int fd);
     int get_id();
+	int RunThread();
 private:
-    int id;
-	std::map<int, boost::shared_ptr<SocketConnection> > connMap;
-	common::BlockingQueue<Packet*>* in_que;
-	common::BlockingQueue<Packet*>* out_que;
+    int id_;
+	std::map<int, boost::shared_ptr<SocketConnection> > connMap_;
+	common::BlockingQueue<Packet*>* in_que_;
+	common::BlockingQueue<Packet*>* out_que_;
+	int epoll_fd_;
+	const int EPOLL_EVENTS = 100;
+	
+	pthread_t tid_;
+	
+	int setNonblock(int fd);
+	
+	static handleFunc(void* arg);
 };
 }
 
