@@ -8,7 +8,7 @@
 
 #include "error.h"
 
-const char *errstr(errorcode code) {
+const char *errstr(errcode code) {
     switch(code) {
         case OK:
             return "OK";

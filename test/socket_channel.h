@@ -15,10 +15,10 @@
 #define SOCKET_CHANNEL_H
 #include <pthread.h>
 #include <map>
+#include <sys/epoll.h>
 #include "common/blocking_queue.h"
 #include "packet.h"
 #include "socket_connection.h"
-#include <boost/shared_ptr.hpp>
 
 namespace N {
 class SocketChannel {
@@ -26,21 +26,26 @@ public:
 	SocketChannel(common::BlockingQueue<Packet*>*, common::BlockingQueue<Packet*>*);
 	~SocketChannel();
 	int AddConnection(int fd);
+	int RemoveConnection(int fd);
     int get_id();
 	int RunThread();
 private:
     int id_;
-	std::map<int, boost::shared_ptr<SocketConnection> > connMap_;
+	std::map<int, SocketConnection* > connMap_;
 	common::BlockingQueue<Packet*>* in_que_;
 	common::BlockingQueue<Packet*>* out_que_;
-	int epoll_fd_;
+	int epollfd_;
 	const int EPOLL_EVENTS = 100;
+	struct epoll_event epollev_[EPOLL_EVENTS];
 	
 	pthread_t tid_;
 	
 	int setNonblock(int fd);
 	
 	static handleFunc(void* arg);
+	
+	int epollAdd(int fd, int flag);
+	int epollRemove(int fd);
 };
 }
 

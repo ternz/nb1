@@ -15,12 +15,12 @@
 #define ERROR_H
 
 #define CHECK_ERRNO(ret) \
-     do { if((ret) < 0) {return errorcode::ERRNO;} } while(0)
+     do { if((ret) < 0) {return errcode::ERRNO;} } while(0)
 
 #define CHECK_NOTOK(ret) \
-    do { if((ret) != errorcode::OK) {return (ret);} } while(0)
+    do { if((ret) != errcode::OK) {return (ret);} } while(0)
 
-enum errorcode {
+enum errcode {
     OK,
     ERRNO,
     NET_ADDR,

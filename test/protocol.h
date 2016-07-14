@@ -16,13 +16,12 @@
 
 namespace N {
     
-template<typename T>
 class Protocal {
 public:
     int errno;
     enum ReadState {Error=-1,Done=0,Partly=1}; 
-    virtual ReadState ReadPacket(int sockfd, T* pack) = 0;
-    virtual int SerializePacket(T* pack, void* buf) = 0;
+    virtual ReadState ReadPacket(int sockfd, Packet* pack) = 0;
+    virtual int SerializePacket(Packet* pack, void* buf) = 0;
 };
 
 }
