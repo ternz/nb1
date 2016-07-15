@@ -15,13 +15,12 @@
 #define PROTOCOL_H
 
 namespace N {
-    
-class Protocal {
+enum IOState {HeaderErr=-2,Errno=-1,Done=0,Again=1,Off=2}; 
+
+class Protocol {
 public:
-    int errno;
-    enum ReadState {Error=-1,Done=0,Partly=1}; 
-    virtual ReadState ReadPacket(int sockfd, Packet* pack) = 0;
-    virtual int SerializePacket(Packet* pack, void* buf) = 0;
+    int ReadPacket(int fd, Packet* pack);
+    int WritePacket(int fd, OutBuffer* buf);
 };
 
 }

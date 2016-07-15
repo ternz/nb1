@@ -13,16 +13,20 @@
             <file>file:/E:/NetBeansProjects/test/error.h</file>
             <file>file:/E:/NetBeansProjects/test/socket_channel.cpp</file>
             <file>file:/E:/NetBeansProjects/test/server.h</file>
+            <file>file:/E:/NetBeansProjects/test/socket_connection.h</file>
             <file>file:/E:/NetBeansProjects/test/socket_connection.cpp</file>
             <file>file:/E:/NetBeansProjects/test/processor.h</file>
             <file>file:/E:/NetBeansProjects/test/error.cpp</file>
+            <file>file:/E:/NetBeansProjects/test/sys/epoll.h</file>
             <file>file:/E:/NetBeansProjects/test/packet.h</file>
             <file>file:/E:/NetBeansProjects/test/protocol.h</file>
             <file>file:/E:/NetBeansProjects/test/Makefile</file>
             <file>file:/E:/NetBeansProjects/test/socket_depatcher.h</file>
             <file>file:/E:/NetBeansProjects/test/simple_collector.h</file>
             <file>file:/E:/NetBeansProjects/test/collector.h</file>
+            <file>file:/E:/NetBeansProjects/test/protocol.cpp</file>
             <file>file:/E:/NetBeansProjects/test/main.cpp</file>
+            <file>file:/E:/NetBeansProjects/test/pakcet.cpp</file>
             <file>file:/E:/NetBeansProjects/test/socket_depatcher.cpp</file>
         </group>
     </open-files>

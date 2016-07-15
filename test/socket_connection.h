@@ -14,16 +14,19 @@
 #ifndef SOCKET_CONNECTION_H
 #define SOCKET_CONNECTION_H
 #include "packet.h"
+#include "socket_channel.h"
 
 namespace N {
 class SocketConnection {
 public:
 	SocketConnection(int fd);
 	~SocketConnection();
+	Packet* ReleaseInPacket();
+	friend class SocketChannel;
 private:
-	int sockfd;
-	Packet* in_pack;
-	Packet* out_pack;
+	int sockfd_;
+	Packet* in_pack_;
+	OutBuffer* out_buf_;
 };
 }
 

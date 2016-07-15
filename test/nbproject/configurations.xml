@@ -16,6 +16,7 @@
     <logicalFolder name="SourceFiles" displayName="源文件" projectFiles="true">
       <itemPath>error.cpp</itemPath>
       <itemPath>main.cpp</itemPath>
+      <itemPath>pakcet.cpp</itemPath>
       <itemPath>protocol.cpp</itemPath>
       <itemPath>server.cpp</itemPath>
       <itemPath>simple_collector.cpp</itemPath>
@@ -61,6 +62,8 @@
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="packet.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="pakcet.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="processor.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -118,6 +121,8 @@
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="packet.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="pakcet.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="processor.h" ex="false" tool="3" flavor2="0">
       </item>

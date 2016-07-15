@@ -19,6 +19,7 @@
 #include "common/blocking_queue.h"
 #include "packet.h"
 #include "socket_connection.h"
+#include "protocol.h"
 
 namespace N {
 class SocketChannel {
@@ -40,12 +41,19 @@ private:
 	
 	pthread_t tid_;
 	
+	Protocol protocol;
+	
 	int setNonblock(int fd);
 	
 	static handleFunc(void* arg);
 	
 	int epollAdd(int fd, int flag);
 	int epollRemove(int fd);
+	
+	void clearSock(int fd) {
+		close(fd);
+		RemoveConnection(fd);
+	}
 };
 }
 

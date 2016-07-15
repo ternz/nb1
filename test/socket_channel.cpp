@@ -95,9 +95,44 @@ SocketChannel::handleFunc(void* arg) {
 			SocketConnection* conn = (SocketConnection*)th->epollev_[i].data.ptr;
 			if(th->epollev_[i].events & EPOLLIN) {
 				//do read
+				if(conn.in_pack_ == NULL) {
+					conn.in_pack_ = new Packet();
+				}
+				int state = th->protocol.ReadPacket(conn.sockfd_, conn.in_pack_);
+				switch(state) {
+					case IOState::HeaderErr: {
+						LOG_ERROR<<"header error "<<conn.in_pack_.header.val<<"\n";
+						//TODO response a error message
+						th->clearSock(conn.sockfd_);
+						break;
+					}
+					case IOState::Errno: {
+						LOG_ERROR<<"read error "<<errstr(errcode::ERRNO)<<"\n";
+						//TODO response a error message
+						th->clearSock(conn.sockfd_);
+						break;
+					}
+					case IOState::Off: {
+						th->clearSock(conn.sockfd_);
+						break;
+					}
+					case IOState::Again: {
+						if(epollAdd(conn.sockfd_, EPOLLIN) < 0) {
+							LOG_ERROR<<"epoll add error "<<errstr(errcode::ERRNO)<<"\n"; 
+						}
+						break;
+					}
+					case IOState::Done: {
+						//Q? epoll add
+						th->in_que_->Push(conn.ReleaseInPacket());
+						break;
+					}
+				}
+				
 			}
 			if(th->epollev_[i].events & EPOLLOUT) {
 				//do write
+				int state = th->protocol.WritePacket()
 			}
 		}
 	}

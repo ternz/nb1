@@ -9,9 +9,16 @@
 using namespace N;
 
 SocketConnection::SocketConnection(int fd) 
-	:sockfd(fd), in_pack(NULL), out_pack(NULL) {
+	:sockfd_(fd), in_pack_(NULL), out_buf_(NULL) {
 
 }
 
 SocketConnection::~SocketConnection() {}
+
+Packet* 
+	SocketConnection::ReleaseInPacket() {
+	Packet *tmp = in_pack_;
+	in_pack_ = NULL;
+	return tmp;
+}
 
