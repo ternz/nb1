@@ -13,12 +13,34 @@ SocketConnection::SocketConnection(int fd)
 
 }
 
-SocketConnection::~SocketConnection() {}
+SocketConnection::~SocketConnection() {
+	if(in_pack_ != NULL) {
+		delete in_pack_;
+		in_pack_ = NULL;
+	}
+	if(out_buf_ != NULL) {
+		delete out_buf_;
+		out_buf_ = NULL;
+	}
+}
 
 Packet* 
-	SocketConnection::ReleaseInPacket() {
+SocketConnection::ReleaseInPacket() {
 	Packet *tmp = in_pack_;
 	in_pack_ = NULL;
 	return tmp;
 }
 
+Packet* 
+SocketConnection::PrepareOutPacket(Packet* pack) {
+	if(out_buf_ == NULL) {
+		out_buf_ = new OutBuffer();
+	}
+	pack->Serialize(out_buf_);
+}
+
+void 
+SocketConnection::ReleaseOutBuffer() {
+	delete out_buf_;
+	out_buf_ = NULL;
+}

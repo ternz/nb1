@@ -38,6 +38,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/error.o \
 	${OBJECTDIR}/main.o \
 	${OBJECTDIR}/pakcet.o \
+	${OBJECTDIR}/processor.o \
 	${OBJECTDIR}/protocol.o \
 	${OBJECTDIR}/server.o \
 	${OBJECTDIR}/simple_collector.o \
@@ -84,6 +85,11 @@ ${OBJECTDIR}/pakcet.o: pakcet.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -I.. -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/pakcet.o pakcet.cpp
+
+${OBJECTDIR}/processor.o: processor.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I.. -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/processor.o processor.cpp
 
 ${OBJECTDIR}/protocol.o: protocol.cpp 
 	${MKDIR} -p ${OBJECTDIR}

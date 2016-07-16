@@ -60,7 +60,7 @@ Protocol::ReadPacket(int fd, Packet* pack) {
 }
 
 int 
-WritePacket(int fd, OutBuffer* out) {
+Protocol::WritePacket(int fd, OutBuffer* out) {
 	int ret = 0;
 	int nwrite = out->buf.size() - out->bytes_writen;
 	ret = write(fd, out->buf[out->bytes_writen], nwrite);

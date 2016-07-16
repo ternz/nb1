@@ -22,6 +22,8 @@ public:
 	SocketConnection(int fd);
 	~SocketConnection();
 	Packet* ReleaseInPacket();
+	void PrepareOutPacket(Packet* pack);
+	void ReleaseOutBuffer();
 	friend class SocketChannel;
 private:
 	int sockfd_;

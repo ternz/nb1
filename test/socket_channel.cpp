@@ -119,6 +119,7 @@ SocketChannel::handleFunc(void* arg) {
 					case IOState::Again: {
 						if(epollAdd(conn.sockfd_, EPOLLIN) < 0) {
 							LOG_ERROR<<"epoll add error "<<errstr(errcode::ERRNO)<<"\n"; 
+							th->clearSock(conn.sockfd_);
 						}
 						break;
 					}
@@ -132,7 +133,29 @@ SocketChannel::handleFunc(void* arg) {
 			}
 			if(th->epollev_[i].events & EPOLLOUT) {
 				//do write
-				int state = th->protocol.WritePacket()
+				int state = th->protocol.WritePacket(conn.sockfd_, conn.out_buf_);
+				switch(state) {
+					case IOState::Errno: {
+						LOG_ERROR<<"read error "<<errstr(errcode::ERRNO)<<"\n";
+						//TODO response a error message
+						th->clearSock(conn.sockfd_);
+						break;
+					}
+					case IOState::Again: {
+						if(epollAdd(conn.sockfd_, EPOLLOUT) < 0) {
+							LOG_ERROR<<"epoll add error "<<errstr(errcode::ERRNO)<<"\n"; 
+							th->clearSock(conn.sockfd_);
+						}
+						break;
+					}
+					case IOState::Done: {
+						if(epollAdd(conn.sockfd_, EPOLLIN) < 0) {
+							LOG_ERROR<<"epoll add error "<<errstr(errcode::ERRNO)<<"\n"; 
+							th->clearSock(conn.sockfd_);
+						}
+						break;
+					}
+				}
 			}
 		}
 	}
