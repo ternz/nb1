@@ -7,9 +7,13 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/E:/NetBeansProjects/test/server.cpp</file>
-            <file>file:/E:/NetBeansProjects/test/socket_channel.cpp</file>
-            <file>file:/E:/NetBeansProjects/test/server.h</file>
+            <file>file:/E:/NetBeansProjects/mq-proxy/multiplexper.cpp</file>
+            <file>file:/E:/NetBeansProjects/mq-proxy/server.h</file>
+            <file>file:/E:/NetBeansProjects/mq-proxy/multiplexer.h</file>
+            <file>file:/E:/NetBeansProjects/mq-proxy/tsqueue.h</file>
+            <file>file:/E:/NetBeansProjects/mq-proxy/server.cpp</file>
+            <file>file:/E:/NetBeansProjects/mq-proxy/fdhandle.h</file>
+            <file>file:/E:/NetBeansProjects/mq-proxy/error.h</file>
         </group>
     </open-files>
 </project-private>

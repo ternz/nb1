@@ -6,3 +6,10 @@
 #include "processor.h"
 
 using namespace N;
+
+Processor::Processor(int workers, common::BlockingQueue<Packet*>* que) 
+	:workers(workers),work_que_(que) {
+	
+}
+
+Processor::~Processor() {}
