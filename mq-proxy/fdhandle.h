@@ -20,7 +20,8 @@ namespace spxy {
 enum FdType {
 	None = 0,
 	Lstsock, 
-	Cmnsock, 
+	Cmnsock_C,   //proxy as a client
+	Cmnsock_S,   //proxy as a server
 	Pipe
 };
 
@@ -44,7 +45,8 @@ struct FdHandle {
 		return new FdHandle();
 	}
 	friend void FHDestory(FdHandle* fh) {
-		close(fh);
+		if(fh->fd != -1)
+			close(fh->fd);
 		delete fh;
 	}
 };

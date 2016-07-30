@@ -95,7 +95,9 @@ void* ProxyHandler::threadFunc_(void* arg) {
 			FdHandle *fh = (FdHandle*)ev.data.ptr;
 			if(fh->type == FdType::Lstsock && (ev->events & Multiplexer::IO_READ)) {
 				
-			} else if(ev->events & (Multiplexer::IO_READ | Multiplexer::IO_WRITE)) {
+			} else if(ev->events & Multiplexer::IO_READ) {
+				fh->state = IOState::Read;
+			} else if(ev->events & Multiplexer::IO_WRITE) {
 				
 			} else if(ev->events & Multiplexer::IO_ERR) {
 				LOG_ERROR<<"Multiplexer::IO_ERR occur\n";
