@@ -32,6 +32,8 @@ ProxyHandler::~ProxyHandler() {
 
 int 
 ProxyHandler::Run(string& selfaddr, string& targaddr) {
+	if(run_) return;
+	
     int ret = 0;
     ret = Helper::ParseEndpoint(selfaddr, &self_ip_, &self_port_);
     CHECK_NOTOK(ret);
@@ -57,10 +59,10 @@ ProxyHandler::Run(string& selfaddr, string& targaddr) {
 	
 	//target addr
 	
-	ret = Helper::ParseEndpoint(targaddr, &targ_ip_, &targ_port_);
+	ret = Helper::ParseEndpoint(targaddr, &broker_ip_, &broker_port_);
     CHECK_NOTOK(ret);
 	
-    Helper::MakeSockAddr(targ_ip_, targ_port_, &targ_addr_);
+    Helper::MakeSockAddr(broker_ip_, broker_port_, &broker_addr_);
 	
 	//create & run thread
 	pthread_attr_t attr;
@@ -94,11 +96,89 @@ void* ProxyHandler::threadFunc_(void* arg) {
 			struct epoll_event *ev = th->multiplexer_->get_ev(i);
 			FdHandle *fh = (FdHandle*)ev.data.ptr;
 			if(fh->type == FdType::Lstsock && (ev->events & Multiplexer::IO_READ)) {
+				//accept connection, ignore peer socket address
+				int new_conn = accept(fh->fd, NULL, NULL);
+				if(new_conn < 0) {
+					if(errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR || errno == ECONNABORTED) 
+						continue;
+					LOG_ERROR<<"socket accept error: "<<errstr(errcode::ERRNO)<<"\n";
+					//exit(errcode::ERRNO);
+					continue;
+				}
+				FdHandle* ps_fh = FHCreate();
+				ps_fh->fd = new_conn;
+				ps_fh->type = FdType::Cmnsock_S;
 				
+				//proxy connect to broker as a client
+				int cfd = socket(AF_INET, SOCK_STREAM, 0);
+				if(cfd < 0) {
+					LOG_ERROR<<"create socket error: "<<errstr(errcode::ERRNO)<<"\n";
+					FHDestory(ps_fh);
+					continue;
+				}
+				int err = Helper::SetNonblock(cfd);
+				if(err < 0) {
+					LOG_ERROR<<"fd set nonblock error: "<<errstr(errcode::ERRNO)<<"\n";
+					FHDestory(ps_fh);
+					continue;
+				}
+				err = connect(cfd, th->broker_addr_, sizeof(th->broker_addr_));
+				if(err < 0) {
+					if(errno == EINPROGRESS) continue;
+					LOG_ERROR<<"fd set nonblock error: "<<errstr(errcode::ERRNO)<<"\n";
+					FHDestory(ps_fh);
+					continue;
+				}
+				FdHandle* pc_fh = FHCreate();
+				pc_fh->fd = cfd;
+				pc_fh->type = FdType::Cmnsock_C;
+				
+				ps_fh->partner = pc_fh;
+				pc_fh->partner = ps_fh;
+				
+				if(0 == err) {
+					//连接已完成,注册与client端连接socket可读事件
+					th->multiplexer_->Add(ps_fh->fd, Multiplexer::IO_READ | Multiplexer::IO_ONESHOT, ps_fh);
+				} else {
+					pc_fh->state = IOState::Connecting;
+					//注册与broker端连接socket可读可写事件
+					th->multiplexer_->Add(pc_fh->fd, 
+						Multiplexer::IO_READ | Multiplexer::IO_WRITE | Multiplexer::IO_ONESHOT, pc_fh);
+				}
+				
+				/*TODO
+				 * 这里使用connect自带的超时，超时时间过长。以后实现自定义超时时间
+				 */
+				
+			} else if(fh->state == IOState::Connecting) {
+				if(ev->events & Multiplexer::IO_READ || ev->events & Multiplexer::IO_WRITE) {
+					int error;
+					socklen_t len = sizeof(error);
+					if(getsockopt(fh->fd, SOL_SOCKET, SO_ERROR, &error, &len) < 0 || error != 0) {
+						if(error !=0) errno = error;
+						LOG_ERROR<<"connect to broker error: "<<strerror(errno)<<"\n";
+						FHDestory(fh->partner);
+						FHDestory(fh);
+					} else {
+						//connection ok
+						th->multiplexer_->Add(fh->partner->fd, Multiplexer::IO_READ | Multiplexer::IO_ONESHOT, fh->partner);
+						//state: Conneting -> None
+						fh->state = IOState::None;
+					}
+				} else {
+					//不太可能执行到这里
+					LOG_ERROR<<"1?unknown error\n";
+					FHDestory(fh->partner);
+					FHDestory(fh);
+				}
 			} else if(ev->events & Multiplexer::IO_READ) {
-				fh->state = IOState::Read;
+				if(fh->state == IOState::None)
+					fh->state = IOState::Readable;
+				th->que_.Push(fh);
 			} else if(ev->events & Multiplexer::IO_WRITE) {
-				
+				if(fh->state == IOState::None)
+					fh->state = IOState::Writable;
+				th->que_.Push(fh);
 			} else if(ev->events & Multiplexer::IO_ERR) {
 				LOG_ERROR<<"Multiplexer::IO_ERR occur\n";
 				FHDestory(fh);

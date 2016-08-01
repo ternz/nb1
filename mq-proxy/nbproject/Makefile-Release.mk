@@ -39,6 +39,8 @@ OBJECTFILES= \
 	${OBJECTDIR}/helper.o \
 	${OBJECTDIR}/main.o \
 	${OBJECTDIR}/multiplexper.o \
+	${OBJECTDIR}/packet.o \
+	${OBJECTDIR}/processor.o \
 	${OBJECTDIR}/proxy_handler.o
 
 
@@ -90,6 +92,16 @@ ${OBJECTDIR}/multiplexper.o: multiplexper.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -I/cygdrive/F/GitHub/include -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/multiplexper.o multiplexper.cpp
+
+${OBJECTDIR}/packet.o: packet.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -I/cygdrive/F/GitHub/include -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/packet.o packet.cpp
+
+${OBJECTDIR}/processor.o: processor.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -I/cygdrive/F/GitHub/include -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/processor.o processor.cpp
 
 ${OBJECTDIR}/proxy_handler.o: proxy_handler.cpp 
 	${MKDIR} -p ${OBJECTDIR}

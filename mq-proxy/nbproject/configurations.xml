@@ -7,6 +7,8 @@
       <itemPath>helper.h</itemPath>
       <itemPath>logger.h</itemPath>
       <itemPath>multiplexer.h</itemPath>
+      <itemPath>packet.h</itemPath>
+      <itemPath>processor.h</itemPath>
       <itemPath>proxy_handler.h</itemPath>
       <itemPath>tsqueue.h</itemPath>
     </logicalFolder>
@@ -15,6 +17,8 @@
       <itemPath>helper.cpp</itemPath>
       <itemPath>main.cpp</itemPath>
       <itemPath>multiplexper.cpp</itemPath>
+      <itemPath>packet.cpp</itemPath>
+      <itemPath>processor.cpp</itemPath>
       <itemPath>proxy_handler.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles" displayName="资源文件" projectFiles="true">
@@ -64,6 +68,14 @@
       </item>
       <item path="multiplexper.cpp" ex="false" tool="1" flavor2="0">
       </item>
+      <item path="packet.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="packet.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="processor.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="processor.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="proxy_handler.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="proxy_handler.h" ex="false" tool="3" flavor2="0">
@@ -111,6 +123,14 @@
       <item path="multiplexer.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="multiplexper.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="packet.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="packet.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="processor.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="processor.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="proxy_handler.cpp" ex="false" tool="1" flavor2="0">
       </item>

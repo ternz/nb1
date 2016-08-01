@@ -27,9 +27,12 @@ enum FdType {
 
 enum IOState {
 	None = 0,
-	Read, 
-	Write, 
-	Error
+	Readable, 
+	Writable, 
+	Error,
+	Connecting,
+	Reading,
+	Writing
 };
 
 struct FdHandle {
@@ -45,6 +48,7 @@ struct FdHandle {
 		return new FdHandle();
 	}
 	friend void FHDestory(FdHandle* fh) {
+		if(fh == NULL) return;
 		if(fh->fd != -1)
 			close(fh->fd);
 		delete fh;

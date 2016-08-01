@@ -37,9 +37,9 @@ private:
     std::string self_ip_;
     uint16_t self_port_;
     struct sockaddr_in self_addr_;
-	std::string targ_ip_;
-    uint16_t targ_port_;
-	struct sockaddr_in targ_addr_;
+	std::string broker_ip_;
+    uint16_t broker_port_;
+	struct sockaddr_in broker_addr_;
     const int ACCP_QU = 32;
 	
 	pthread_t tid_;
