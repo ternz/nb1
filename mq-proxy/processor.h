@@ -31,6 +31,9 @@ private:
 	bool run_;
 	
 	static void* threadFunc_(void *arg);
+	void doDataIn(FdHandle *fh);
+	void doDataOut(FdHandle *fh);
+	Packet * doDataConv(Packet *pack);
 };
 }
 

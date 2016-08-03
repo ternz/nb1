@@ -9,8 +9,27 @@
 #include <string.h>
 #include <algorithm>
 #include "packet.h"
+#include "error.h"
 
 using namespace spxy;
+
+Packet::Packet()
+	:size_(0), data_(std::vector<char>(0)), doio(NULL), Optype(0) 
+{
+	op_size_ = 0;
+	op_base_ = &header_[0];
+}
+
+const char * Packet::Errstr(State s) {
+	switch(s) {
+		case HeaderErr:
+			return "packet header error";
+		case Errno:
+			return errstr(errcode::ERRNO);
+		default:
+			return "no error";
+	}
+}
 
 void Packet::set_optype(Optype type) {
 	optype_ = type;
@@ -27,6 +46,7 @@ void Packet::set_optype(Optype type) {
 	}
 }
 
+//fd必须nonblock
 int Packet::Read(int fd) {
 	int ret = 0;
 	while(op_size_ < std::max(HEADER_SIZE, size_)) {
@@ -82,6 +102,7 @@ int Packet::Read(int fd) {
 	return State::Done;
 }
 
+//fd必须nonblock
 int Packet::Write(int fd) {
 	int ret = 0;
 	while(op_size_ < size_) {

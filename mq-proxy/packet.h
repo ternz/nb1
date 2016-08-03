@@ -16,8 +16,13 @@
 #include <vector>
 
 namespace spxy {
+class Processor;
+
 class Packet {
 public:
+	Packet();
+	static const char* Errstr(State s);
+	
 	const int MAX_PACKET_SIZE = 65535;
 	const int HEADER_SIZE = 4;
 	enum Optype {None=0, Read, Write};
@@ -30,6 +35,8 @@ public:
 	int (*doio)(int fd);
 	int Read(int fd);
 	int Write(int fd);
+	
+	friend class Processor;
 private:
 	union Header {
 		char* bytes[HEADER_SIZE];
