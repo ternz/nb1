@@ -14,6 +14,8 @@
 #ifndef FDHANDLE_H
 #define FDHANDLE_H
 #include <stdlib.h>
+#include <list>
+#include "packet.h"
 
 namespace spxy {
 
@@ -27,19 +29,19 @@ enum FdType {
 
 enum IOState {
 	None = 0,
-	Readable, 
-	Writable, 
-	Error,
-	Connecting,
-	Reading,
-	Writing
+	Readable = 1, 
+	Writable = 2, 
+	Error = 4,
+	Connecting = 8,
+	Reading = 16,
+	Writing = 32
 };
 
 struct FdHandle {
 	int fd;
 	FdType type;
 	IOState state;
-	void* data;
+	Packet* data;
 	FdHandle* partner;
 	
 	FdHandle():fd(-1), type(0), state(0), data(NULL), partner(NULL) {}
@@ -51,7 +53,10 @@ struct FdHandle {
 		if(fh == NULL) return;
 		if(fh->fd != -1)
 			close(fh->fd);
+		if(fh->data != NULL)
+			delete fh->data;
 		delete fh;
+		//TODO: handle data poiter
 	}
 };
 
