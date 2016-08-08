@@ -16,15 +16,15 @@
 
 #include <iostream>
 
-namespace spxy {
 
-#define LOG_DEBUG   std::cout<<"DEBUG "<<
-#define LOG_INFO    std::cout<<"INFO "<<
-#define LOG_WARM    std::cout<<"WARM "<<
-#define LOG_ERROR   std::cout<<"ERROR "<<
-#define LOG_FATAL   std::cout<<"FATAL "<<
 
-}
+#define LOG_DEBUG   std::cout<<"DEBUG "
+#define LOG_INFO    std::cout<<"INFO "
+#define LOG_WARM    std::cout<<"WARM "
+#define LOG_ERROR   std::cout<<"ERROR "
+#define LOG_FATAL   std::cout<<"FATAL "
+
+
 
 #endif /* LOGGER_H */
 

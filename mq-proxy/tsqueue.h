@@ -22,7 +22,7 @@ namespace spxy {
 template <typename T>
 class TSQueue {
 public:
-	TSQueue(int size);
+	explicit TSQueue(int size);
 	~TSQueue();
 	T Pop();
 	void Push(T);

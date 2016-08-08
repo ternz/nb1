@@ -8,16 +8,18 @@
 #include <errno.h>
 #include <string.h>
 #include <algorithm>
+#include <vector>
 #include "packet.h"
 #include "error.h"
+#include "logger.h"
 
 using namespace spxy;
 
 Packet::Packet()
-	:size_(0), data_(std::vector<char>(0)), doio(NULL), Optype(0) 
+	:size_(0), data_(std::vector<char>(0)), optype_(NONE) 
 {
 	op_size_ = 0;
-	op_base_ = &header_[0];
+	op_base_ = &header_.bytes[0];
 }
 
 const char * Packet::Errstr(State s) {
@@ -25,7 +27,7 @@ const char * Packet::Errstr(State s) {
 		case HeaderErr:
 			return "packet header error";
 		case Errno:
-			return errstr(errcode::ERRNO);
+			return errstr(ERR_ERRNO);
 		default:
 			return "no error";
 	}
@@ -33,21 +35,21 @@ const char * Packet::Errstr(State s) {
 
 void Packet::set_optype(Optype type) {
 	optype_ = type;
-	switch(type) {
-		case None:
+	/*switch(type) {
+		case NONE:
 			doio = NULL;
 			break;
-		case Read:
-			doio = Read;
+		case READ:
+			doio = Packet::Read;
 			break;
-		case Write:
-			doio = Write;
+		case WRITE:
+			doio = Packet::Write;
 			break;
-	}
+	}*/
 }
 
 //fd必须nonblock
-int Packet::Read(int fd) {
+Packet::State Packet::Read(int fd) {
 	int ret = 0;
 	while(op_size_ < std::max(HEADER_SIZE, size_)) {
 		if(op_size_ < HEADER_SIZE) {
@@ -58,19 +60,21 @@ int Packet::Read(int fd) {
 				if(ret == EAGAIN) {
 					break;
 				} else {
-					return State::Errno;
+					return Errno;
 				}
 			} else if(ret == 0) {
-				return State::SockOff;
+				return SockOff;
 			} else {
 				op_size_ += ret;
 				if(ret == nread) {
 					if(header_.val > MAX_PACKET_SIZE) {
-						return State::HeaderErr;
+						LOG_ERROR<<"error header: "<<std::hex
+							<<header_.bytes[0]<<header_.bytes[1]<<header_.bytes[2]<<header_.bytes[3]<<"\n";
+						return HeaderErr;
 					}
 					size_ = header_.val + HEADER_SIZE;
 					data_.resize(size_);
-					memcpy(&data_[0], &header_.bytes[0], HEADER_SIZE)
+					memcpy(&data_[0], &header_.bytes[0], HEADER_SIZE);
 					op_base_ = &data_[HEADER_SIZE];
 				} else {
 					op_base_ += ret;
@@ -86,10 +90,10 @@ int Packet::Read(int fd) {
 				if(ret == EAGAIN) {
 					break;
 				} else {
-					return State::Errno;
+					return Errno;
 				}
 			} else if(ret == 0) {
-				return State::SockOff;
+				return SockOff;
 			} else {
 				op_size_ += ret;
 				op_base_ += ret;
@@ -97,13 +101,13 @@ int Packet::Read(int fd) {
 		}
 	} //end of while
 	if(op_size_ < std::max(HEADER_SIZE, size_)) {
-		return State::Again;
+		return Again;
 	} 
-	return State::Done;
+	return Done;
 }
 
 //fd必须nonblock
-int Packet::Write(int fd) {
+Packet::State Packet::Write(int fd) {
 	int ret = 0;
 	while(op_size_ < size_) {
 		int nwrite = size_ - op_size_;
@@ -113,13 +117,13 @@ int Packet::Write(int fd) {
 			if(ret == EAGAIN) {
 				break;
 			} else {
-				return State::Errno;
+				return Errno;
 			}
 		}
 		op_size_ += ret;
 	}
 	if(op_size_ < size_) {
-		return State::Again;
+		return Again;
 	}
-	return State::Done;
+	return Done;
 }

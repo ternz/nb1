@@ -4,6 +4,7 @@
  * and open the template in the editor.
  */
 #include <stdlib.h>
+#include <unistd.h>
 #include <iostream>
 #include "multiplexer.h"
 #include "error.h"
@@ -13,8 +14,8 @@ using namespace spxy;
 
 Multiplexer::Multiplexer()
 	:fd_(-1), ev_buf_(NULL) {
-	int ret = Init();
-	if(ret != errcode::OK) {
+	errcode ret = Init();
+	if(ret != ERR_OK) {
 		cerr<<errstr(ret)<<endl;
 		exit(ret);
 	}
@@ -27,31 +28,41 @@ Multiplexer::~Multiplexer() {
 		delete[] ev_buf_;
 }
 
-int  
+errcode  
 Multiplexer::Init() {
-	fd_ = epoll_create(0);
-	CHECK_ERRNO(fd);
+	fd_ = epoll_create(MAX_EV);
+	CHECK_ERRNO(fd_);
 	ev_buf_ = new struct epoll_event[MAX_EV];
-	return 0;
+	return ERR_OK;
 }
 
-int 
+errcode 
 Multiplexer::Add(int fd, int flag, void* data) {
+	return ctl(EPOLL_CTL_ADD, fd, flag, data);
+}
+
+errcode Multiplexer::Remove(int fd) {
+	return ctl(EPOLL_CTL_DEL, fd, 0, NULL);
+}
+
+errcode 
+Multiplexer::Modify(int fd, int flag, void* data) {
+	return ctl(EPOLL_CTL_MOD, fd, flag, data);
+}
+
+errcode 
+Multiplexer::ctl(int op, int fd, int flag, void* data) {
 	struct epoll_event ev;
 	ev.events = flag;
 	ev.data.ptr = data;
 	
+	struct epoll_event *pev = &ev;
+	if(op == EPOLL_CTL_DEL) pev = NULL;
+	
 	int ret;
-	ret = epoll_ctl(fd_, CTL_ADD, fd, &ev);
+	ret = epoll_ctl(fd_, op, fd, pev);
 	CHECK_ERRNO(ret);
-	return 0;
-}
-
-int Multiplexer::Remove(int fd) {
-	int ret;
-	ret = epoll_ctl(fd_, CTL_DEL, fd, NULL);
-	CHECK_ERRNO(ret);
-	return 0;
+	return ERR_OK;
 }
 
 int 

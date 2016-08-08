@@ -16,32 +16,35 @@
 #include <sys/types.h>
 #include <sys/epoll.h>
 
+#include "error.h"
+
 namespace spxy {
+
+#define MTP_EV_READ		EPOLLIN
+#define MTP_EV_WRITE	EPOLLOUT
+#define MTP_EV_ERR		EPOLLERR
+#define MTP_EV_ONESHOT  EPOLLONESHOT
+#define MTP_EV_ET		EPOLLET
+
+#define MAX_EV 1024
 
 class Multiplexer {
 public:
-	static const int IO_READ = EPOLLIN;
-	static const int IO_WRITE = EPOLLOUT;
-	static const int IO_ERR = EPOLLERR;
-	static const int IO_ONESHOT = EPOLLONESHOT;
-	
 	Multiplexer();
 	~Multiplexer();
-	int Init();
-	int Add(int fd, int flag, void* data);
-	int Remove(int fd);
+	errcode Init();
+	errcode Add(int fd, int flag, void* data);
+	errcode Remove(int fd);
+	errcode Modify(int fd, int flag, void* data);
 	int Wait(int timeout_ms);
 	struct epoll_event* get_ev(int index) {
 		return &ev_buf_[index];
 	}
 private:
 	int fd_;
-	const int MAX_EV = 1024;
+
 	struct epoll_event *ev_buf_;
-	
-	static const int CTL_ADD = EPOLL_CTL_ADD;
-	static const int CTL_MOD = EPOLL_CTL_MOD;
-	static const int CTL_DEL = EPOLL_CTL_DEL;
+	errcode ctl(int op, int fd, int flag, void* data);
 };
 
 }

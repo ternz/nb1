@@ -18,13 +18,15 @@
 #include <string>
 #include <arpa/inet.h>
 
+#include "error.h"
+
 namespace spxy {
 
 class Helper {
 public:
-	static int ParseEndpoint(std::string endpoint, std::string* ip, uint16_t* port);
-    static int MakeSockAddr(std::string& ip, uint16_t port, struct sockaddr_in* addr);
-	static int SetNonblock(int fd);
+	static errcode ParseEndpoint(std::string endpoint, std::string* ip, uint16_t* port);
+    static errcode MakeSockAddr(std::string& ip, uint16_t port, struct sockaddr_in* addr);
+	static errcode SetNonblock(int fd);
 };
 
 }

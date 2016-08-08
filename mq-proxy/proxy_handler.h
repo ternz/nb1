@@ -21,17 +21,19 @@
 #include "error.h"
 #include "tsqueue.h"
 #include "fdhandle.h"
+#include "multiplexer.h"
 
 namespace spxy {
-    
-class Multiplexer;
+
+#define ACCP_QU 32
 
 class ProxyHandler {
 public:
-    ProxyHandler(TSQueue<FdHandle*> que, Multiplexer* mtp);
+    ProxyHandler(TSQueue<FdHandle*> *que, Multiplexer *mtp);
     ~ProxyHandler();
     
-    int Run(std::string& selfaddr, std::string& targaddr);
+    errcode Run(std::string& selfaddr, std::string& targaddr);
+	void Wait();
 	
 private:
     std::string self_ip_;
@@ -40,17 +42,18 @@ private:
 	std::string broker_ip_;
     uint16_t broker_port_;
 	struct sockaddr_in broker_addr_;
-    const int ACCP_QU = 32;
+    
 	
 	pthread_t tid_;
 	
 	bool run_;
 	
-	TSQueue<FdHandle*> que_;
+	TSQueue<FdHandle*> *que_;
 	Multiplexer* multiplexer_;
 	
 	static void* threadFunc_(void* arg);
 };
 
+}
 #endif /* SERVER_H */
 

@@ -14,19 +14,23 @@
 #ifndef ERROR_H
 #define ERROR_H
 
+namespace spxy {
+
 #define CHECK_ERRNO(ret) \
-     do { if((ret) < 0) {return errcode::ERRNO;} } while(0)
+     do { if((ret) < 0) {return ERR_ERRNO;} } while(0)
 
 #define CHECK_NOTOK(ret) \
-    do { if((ret) != errcode::OK) {return (ret);} } while(0)
+    do { if((ret) != ERR_OK) {return (ret);} } while(0)
 
 enum errcode {
-    OK,
-    ERRNO,
-    NET_ADDR,
+    ERR_OK = 0,
+    ERR_ERRNO,
+    ERR_NET_ADDR,
 };
 
-const char * errstr(int code);
+const char * errstr(errcode code);
+
+}
 
 #endif /* ERROR_H */
 

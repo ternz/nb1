@@ -14,13 +14,14 @@
 #ifndef FDHANDLE_H
 #define FDHANDLE_H
 #include <stdlib.h>
+#include <unistd.h>
 #include <list>
 #include "packet.h"
 
 namespace spxy {
 
 enum FdType {
-	None = 0,
+	FT_None = 0,
 	Lstsock, 
 	Cmnsock_C,   //proxy as a client
 	Cmnsock_S,   //proxy as a server
@@ -28,9 +29,10 @@ enum FdType {
 };
 
 enum IOState {
-	None = 0,
+	S_None = 0,
 	Readable = 1, 
 	Writable = 2, 
+	ReadWrite = 3,
 	Error = 4,
 	Connecting = 8,
 	Reading = 16,
@@ -41,24 +43,15 @@ struct FdHandle {
 	int fd;
 	FdType type;
 	IOState state;
-	Packet* data;
+	Packet* data_in;
+	Packet* data_out;
 	FdHandle* partner;
 	
-	FdHandle():fd(-1), type(0), state(0), data(NULL), partner(NULL) {}
-	
-	friend FdHandle* FHCreate() {
-		return new FdHandle();
-	}
-	friend void FHDestory(FdHandle* fh) {
-		if(fh == NULL) return;
-		if(fh->fd != -1)
-			close(fh->fd);
-		if(fh->data != NULL)
-			delete fh->data;
-		delete fh;
-		//TODO: handle data poiter
-	}
+	FdHandle():fd(-1), type(FT_None), state(S_None), data(NULL), partner(NULL) {}
 };
+
+FdHandle* FHCreate();
+void FHDestory(FdHandle* fh);
 
 }
 

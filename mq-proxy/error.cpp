@@ -8,15 +8,19 @@
 
 #include "error.h"
 
+namespace spxy {
+
 const char *errstr(errcode code) {
     switch(code) {
-        case OK:
+        case ERR_OK:
             return "OK";
-        case ERRNO:
+        case ERR_ERRNO:
             return strerror(errno);
-        case NET_ADDR:
+        case ERR_NET_ADDR:
             return "net address invalid";
         default:
             return "unkonwn error";
     }
+}
+
 }

@@ -14,32 +14,38 @@
 #ifndef PACKET_H
 #define PACKET_H
 #include <vector>
+#include <sys/types.h>
+#include <stdint.h>
+
+#include "error.h"
 
 namespace spxy {
 class Processor;
 
+#define MAX_PACKET_SIZE 65535
+#define HEADER_SIZE 4
+
 class Packet {
 public:
+	enum Optype {NONE=0, READ, WRITE};
+	enum State {HeaderErr=-2,Errno=-1,Done=0,Again=1,SockOff=2}; 
+	
 	Packet();
 	static const char* Errstr(State s);
 	
-	const int MAX_PACKET_SIZE = 65535;
-	const int HEADER_SIZE = 4;
-	enum Optype {None=0, Read, Write};
-	enum State {HeaderErr=-2,Errno=-1,Done=0,Again=1,SockOff=2}; 
 	void set_optype(Optype type);
 	Optype get_optype() {return optype_;}
 	int size() {return size_;}
 	
 	//出错返回-1, IO全部完成返回0, 部分完成返回1
-	int (*doio)(int fd);
-	int Read(int fd);
-	int Write(int fd);
+	//int (*doio)(int fd);
+	State Read(int fd);
+	State Write(int fd);
 	
 	friend class Processor;
 private:
 	union Header {
-		char* bytes[HEADER_SIZE];
+		char bytes[HEADER_SIZE];
 		uint32_t val;
 	} header_;
 	std::vector<char> data_; 

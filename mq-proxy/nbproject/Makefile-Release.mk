@@ -36,6 +36,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/error.o \
+	${OBJECTDIR}/fdhandle.o \
 	${OBJECTDIR}/helper.o \
 	${OBJECTDIR}/main.o \
 	${OBJECTDIR}/multiplexper.o \
@@ -72,6 +73,11 @@ ${OBJECTDIR}/error.o: error.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -I/cygdrive/F/GitHub/include -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/error.o error.cpp
+
+${OBJECTDIR}/fdhandle.o: fdhandle.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -I/cygdrive/F/GitHub/include -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/fdhandle.o fdhandle.cpp
 
 ${OBJECTDIR}/fdhandle.h.gch: fdhandle.h 
 	${MKDIR} -p ${OBJECTDIR}

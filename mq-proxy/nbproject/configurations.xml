@@ -14,6 +14,7 @@
     </logicalFolder>
     <logicalFolder name="SourceFiles" displayName="源文件" projectFiles="true">
       <itemPath>error.cpp</itemPath>
+      <itemPath>fdhandle.cpp</itemPath>
       <itemPath>helper.cpp</itemPath>
       <itemPath>main.cpp</itemPath>
       <itemPath>multiplexper.cpp</itemPath>
@@ -48,11 +49,14 @@
           <incDir>
             <pElem>F:/GitHub/include</pElem>
           </incDir>
+          <commandLine>-std=c++11</commandLine>
         </ccTool>
       </compileType>
       <item path="error.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="error.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="fdhandle.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="fdhandle.h" ex="false" tool="1" flavor2="0">
       </item>
@@ -109,6 +113,8 @@
       <item path="error.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="error.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="fdhandle.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="fdhandle.h" ex="false" tool="1" flavor2="0">
       </item>

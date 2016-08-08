@@ -12,6 +12,8 @@
  */
 #include "fdhandle.h"
 #include "multiplexer.h"
+#include "tsqueue.h"
+#include "error.h"
 
 #ifndef PROCESSOR_H
 #define PROCESSOR_H
@@ -19,11 +21,11 @@
 namespace spxy {
 class Processor {
 public:
-	Processor(TSQueue<FdHandle*> que, Multiplexer* mtp);
+	Processor(TSQueue<FdHandle*> *que, Multiplexer *mtp);
 	~Processor();
-	int Run(int threads);
+	errcode Run(int threads);
 private:
-	TSQueue<FdHandle*> que_;
+	TSQueue<FdHandle*> *que_;
 	Multiplexer* multiplexer_;
 	int thread_num_;
 	pthread_t *threads_;
