@@ -65,12 +65,12 @@ void* Processor::threadFunc_(void *arg) {
 	do { FHDestory(fh->partner);FHDestory(fh);fh = NULL;} while (0)
 
 void Processor::doDataIn(FdHandle *fh) {
-	if(fh->data == NULL) {
-		fh->data = new Packet();
-		fh->data->set_optype(Packet::READ);
+	if(fh->data_in == NULL) {
+		fh->data_in = new Packet();
+		fh->data_in->set_optype(Packet::READ);
 	}
 	
-	int ret = fh->data->Read(fh->fd);
+	int ret = fh->data_in->Read(fh->fd);
 	
 	if(ret < 0) {
 		LOG_ERROR<<Packet::Errstr(Packet::State(ret))<<"\n";
@@ -82,22 +82,40 @@ void Processor::doDataIn(FdHandle *fh) {
 		DESTORY_FH(fh);
 	} else if(ret == Packet::Again) {
 		//fh->state |= Reading; //no used
-		this->multiplexer_->Modify(fh->fd, MTP_EV_READ | MTP_EV_ONESHOT, fh);
+		if(this->multiplexer_->Modify(fh->fd, MTP_EV_READ | MTP_EV_ONESHOT, fh) 
+			!= ERR_OK) {
+			LOG_ERROR<<"multiplexer modify "<<fh->fd<<" error: "<<errstr(ERR_ERRNO)<<"\n";
+		}
 	} else { //Done
-		if(fh->partner->data != NULL) {
-			LOG_ERROR<<"internal error\n";
+		if(fh->partner->data_out != NULL) {
+			LOG_ERROR<<"internal error: fh->partner->data_out != NULL\n";
 			DESTORY_FH(fh);
 			return;
 		}
-		Packet* new_pack = doDataConv(fh->data);
-		fh->data = NULL;
-		fh->state = S_None;
-		fh->partner->data = new_pack;
+		Packet* new_pack = doDataConv(fh->data_in);
+		fh->data_in = NULL;
+		//fh->state = S_None;
+		
+		ret = new_pack->Write(fh->partner->fd);
+		if(ret < 0) {
+			LOG_ERROR<<Packet::Errstr(Packet::State(ret))<<"\n";
+			DESTORY_FH(fh);
+		} else if(ret == Packet::Again) {
+			fh->partner->data_out = new_pack;
+			if(this->multiplexer_->Modify(fh->partner->fd, MTP_EV_WRITE | MTP_EV_ONESHOT, fh->partner)
+				!= ERR_OK) {
+				LOG_ERROR<<"multiplexer modify "<<fh->fd<<" error: "<<errstr(ERR_ERRNO)<<"\n";
+			}
+		} else {
+			delete new_pack;
+		}
+		
+		/*fh->partner->data = new_pack;
 		fh->partner->state = Writing; // no used
 		if(this->multiplexer_->Modify(fh->partner->fd, MTP_EV_WRITE | MTP_EV_ONESHOT, fh->partner)
 			!= ERR_OK) {
-			LOG_ERROR<<"multiplexer add "<<fh->partner->fd<<" error: "<<errstr(ERR_ERRNO)<<"\n";
-		}
+			LOG_ERROR<<"multiplexer modify "<<fh->partner->fd<<" error: "<<errstr(ERR_ERRNO)<<"\n";
+		}*/
 	}
 }
 
@@ -114,14 +132,15 @@ void Processor::doDataOut(FdHandle* fh) {
 	} else if(ret == Packet::Again) {
 		if(this->multiplexer_->Modify(fh->fd, MTP_EV_WRITE | MTP_EV_ONESHOT, fh)
 			!= ERR_OK) {
-			LOG_ERROR<<"multiplexer add "<<fh->fd<<" error: "<<errstr(ERR_ERRNO)<<"\n";
+			LOG_ERROR<<"multiplexer modify "<<fh->fd<<" error: "<<errstr(ERR_ERRNO)<<"\n";
 		}
 	} else { //Done
-		fh->data = NULL;
+		delete fh->data_out;
+		fh->data_out = NULL;
 		fh->state = S_None;
-		if(this->multiplexer_->Modify(fh->fd, MTP_EV_READ | MTP_EV_ONESHOT, fh)
+		if(this->multiplexer_->Modify(fh->partner->fd, MTP_EV_READ | MTP_EV_ONESHOT, fh->partner)
 			!= ERR_OK) {
-			LOG_ERROR<<"multiplexer add "<<fh->fd<<" error: "<<errstr(ERR_ERRNO)<<"\n";
+			LOG_ERROR<<"multiplexer modify "<<fh->fd<<" error: "<<errstr(ERR_ERRNO)<<"\n";
 		}
 	}
 }

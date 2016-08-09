@@ -17,6 +17,7 @@
 #include <unistd.h>
 #include <list>
 #include "packet.h"
+#include "tsqueue.h"
 
 namespace spxy {
 
@@ -39,13 +40,16 @@ enum IOState {
 	Writing = 32
 };
 
+#define PARTNER(fh) (*((fh)->partner))
+
 struct FdHandle {
 	int fd;
 	FdType type;
 	IOState state;
 	Packet* data_in;
 	Packet* data_out;
-	FdHandle* partner;
+	
+	FdHandle** partner;
 	
 	FdHandle():fd(-1), type(FT_None), state(S_None), data(NULL), partner(NULL) {}
 };
