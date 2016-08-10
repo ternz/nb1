@@ -3,9 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-#include <errno.h>
-#include <string.h>
-
 #include "error.h"
 
 const char *errstr(errcode code) {
@@ -16,6 +13,10 @@ const char *errstr(errcode code) {
             return strerror(errno);
         case ERR_NET_ADDR:
             return "net address invalid";
+		case ERR_NULL_FH:
+			return "fh destoryed";
+		case ERR_REFUSED:
+			return "request refused";
         default:
             return "unkonwn error";
     }

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-private xmlns="http://www.netbeans.org/ns/project-private/1">
+    <data xmlns="http://www.netbeans.org/ns/make-project-private/1">
+        <activeConfTypeElem>1</activeConfTypeElem>
+        <activeConfIndexElem>0</activeConfIndexElem>
+    </data>
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+        <group>
+            <file>file:/F:/MideaGit/mq-proxy2/ptrbuf.cpp</file>
+            <file>file:/F:/MideaGit/mq-proxy2/config.h</file>
+            <file>file:/F:/MideaGit/mq-proxy2/fdhandle.cpp</file>
+            <file>file:/F:/MideaGit/mq-proxy2/multiplexer.h</file>
+            <file>file:/F:/MideaGit/mq-proxy2/error.h</file>
+            <file>file:/F:/MideaGit/mq-proxy2/packet.cpp</file>
+            <file>file:/F:/MideaGit/mq-proxy2/proxy_handler.h</file>
+            <file>file:/F:/MideaGit/mq-proxy2/packet.h</file>
+            <file>file:/F:/MideaGit/mq-proxy2/error.cpp</file>
+            <file>file:/F:/MideaGit/mq-proxy2/main.cpp</file>
+            <file>file:/F:/MideaGit/mq-proxy2/fdhandle.h</file>
+            <file>file:/F:/MideaGit/mq-proxy2/multiplexer.cpp</file>
+            <file>file:/F:/MideaGit/mq-proxy2/logger.h</file>
+            <file>file:/F:/MideaGit/mq-proxy2/ptrbuf.h</file>
+            <file>file:/F:/MideaGit/mq-proxy2/proxy_handler.cpp</file>
+        </group>
+    </open-files>
+</project-private>

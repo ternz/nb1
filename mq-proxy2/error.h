@@ -8,7 +8,7 @@
  * File:   error.h
  * Author: chenwz5
  *
- * Created on 2016年7月8日, 上午10:37
+ * Created on 2016年8月9日, 下午5:53
  */
 
 #ifndef ERROR_H
@@ -21,13 +21,14 @@
     do { if((ret) != ERR_OK) {return (ret);} } while(0)
 
 enum errcode {
-    ERR_OK,
+    ERR_OK = 0,
     ERR_ERRNO,
     ERR_NET_ADDR,
-	ERR_FD_EXIST,
+	ERR_NULL_FH,
+	ERR_REFUSED
 };
 
-const char * errstr(int code);
+const char * errstr(errcode code);
 
 #endif /* ERROR_H */
 

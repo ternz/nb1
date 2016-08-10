@@ -16,7 +16,7 @@ SocketChannel::SocketChannel(common::BlockingQueue<Packet*>* in_que, common::Blo
 	:in_que_(in_que), out_que_(out_que) {
 	epollfd_ = epoll_create(EPOLL_EVENTS);
 	if(epollfd_ == -1) {
-		LOG_FATAL<<"epoll_create failed: "<<errstr(errcode::ERRNO)<<"\n";
+		LOG_FATAL<<"epoll_create failed: "<<errstr(errcode::ERR_ERRNO)<<"\n";
 		exit(1);
 	}
 }
@@ -28,7 +28,7 @@ SocketChannel::~SocketChannel() {
 int
 SocketChannel::AddConnection(int fd) {
 	if(connMap_.find(fd) == connMap_.end()) {
-		return errcode::FD_EXIST;
+		return errcode::ERR_FD_EXIST;
 	}
 	connMap_[fd] = new SocketConnection(fd);
 	int err = epollAdd(fd, EPOLLONESHOT | EPOLLIN);
@@ -38,7 +38,7 @@ SocketChannel::AddConnection(int fd) {
 int 
 SocketChannel::RemoveConnection(int fd) {
 	auto iter = connMap_.find(fd);
-	int err = errcode::OK;
+	int err = errcode::ERR_OK;
 	if(iter != connMap_.end()) {
 		if(iter->second != NULL) {
 			delete iter->second;
@@ -62,7 +62,7 @@ SocketChannel::RunThread() {
 	CHECK_ERRNO(err);
 	
 	pthread_attr_destroy(&attr);
-	return errcode::OK;
+	return errcode::ERR_OK;
 }
 
 int 
@@ -76,9 +76,9 @@ SocketChannel::setNonblock(int fd) {
 	CHECK_ERRNO(val);
 	
 	if(fcntl(fd, F_SETFL, val | O_NONBLOCK) < 0) {
-		return errcode::ERRNO;
+		return errcode::ERR_ERRNO;
 	}
-	return errcode::OK;
+	return errcode::ERR_OK;
 }
 
 void* 
@@ -88,7 +88,7 @@ SocketChannel::handleFunc(void* arg) {
 	while(1) {
 		int evno = epoll_wait(th->epollfd_, th->epollev_, th->EPOLL_EVENTS, -1);
 		if(evno < 0) {
-			LOG_ERROR<<"epoll_wait return errno "<<errno<<": "<<errstr(errcode::ERRNO)<<"\n";
+			LOG_ERROR<<"epoll_wait return errno "<<errno<<": "<<errstr(errcode::ERR_ERRNO)<<"\n";
 			continue;
 		}
 		for(int i=0; i < evno; i++) {
@@ -107,7 +107,7 @@ SocketChannel::handleFunc(void* arg) {
 						break;
 					}
 					case IOState::Errno: {
-						LOG_ERROR<<"read error "<<errstr(errcode::ERRNO)<<"\n";
+						LOG_ERROR<<"read error "<<errstr(errcode::ERR_ERRNO)<<"\n";
 						//TODO response a error message
 						th->clearSock(conn.sockfd_);
 						break;
@@ -118,7 +118,7 @@ SocketChannel::handleFunc(void* arg) {
 					}
 					case IOState::Again: {
 						if(epollAdd(conn.sockfd_, EPOLLIN) < 0) {
-							LOG_ERROR<<"epoll add error "<<errstr(errcode::ERRNO)<<"\n"; 
+							LOG_ERROR<<"epoll add error "<<errstr(errcode::ERR_ERRNO)<<"\n"; 
 							th->clearSock(conn.sockfd_);
 						}
 						break;
@@ -136,21 +136,21 @@ SocketChannel::handleFunc(void* arg) {
 				int state = th->protocol.WritePacket(conn.sockfd_, conn.out_buf_);
 				switch(state) {
 					case IOState::Errno: {
-						LOG_ERROR<<"read error "<<errstr(errcode::ERRNO)<<"\n";
+						LOG_ERROR<<"read error "<<errstr(errcode::ERR_ERRNO)<<"\n";
 						//TODO response a error message
 						th->clearSock(conn.sockfd_);
 						break;
 					}
 					case IOState::Again: {
 						if(epollAdd(conn.sockfd_, EPOLLOUT) < 0) {
-							LOG_ERROR<<"epoll add error "<<errstr(errcode::ERRNO)<<"\n"; 
+							LOG_ERROR<<"epoll add error "<<errstr(errcode::ERR_ERRNO)<<"\n"; 
 							th->clearSock(conn.sockfd_);
 						}
 						break;
 					}
 					case IOState::Done: {
 						if(epollAdd(conn.sockfd_, EPOLLIN) < 0) {
-							LOG_ERROR<<"epoll add error "<<errstr(errcode::ERRNO)<<"\n"; 
+							LOG_ERROR<<"epoll add error "<<errstr(errcode::ERR_ERRNO)<<"\n"; 
 							th->clearSock(conn.sockfd_);
 						}
 						break;
@@ -168,15 +168,15 @@ SocketChannel::epollAdd(int fd, int flag) {
 	ev.data.ptr = (void*)connMap_[fd];
 	int err = epoll_ctl(epollfd_, EPOLL_CTL_ADD, fd, &ev);
 	CHECK_ERRNO(err);
-	return errcode::OK;
+	return errcode::ERR_OK;
 }
 
 int SocketChannel::epollRemove(int fd) {
 	int err = epoll_ctl(epollfd_, EPOLL_CTL_DEL, fd, NULL);
 	if(err < 0) {
 		if(errno != ENOENT) {
-			return errcode::ERRNO;
+			return errcode::ERR_ERRNO;
 		}
 	}
-	return errcode::OK;
+	return errcode::ERR_OK;
 }

@@ -10,10 +10,14 @@
             <file>file:/E:/NetBeansProjects/test/processor.h</file>
             <file>file:/E:/NetBeansProjects/test/socket_channel.h</file>
             <file>file:/E:/NetBeansProjects/test/server.cpp</file>
+            <file>file:/E:/NetBeansProjects/test/packet.h</file>
             <file>file:/E:/NetBeansProjects/test/socket_channel.cpp</file>
             <file>file:/E:/NetBeansProjects/test/protocol.h</file>
+            <file>file:/E:/NetBeansProjects/test/error.h</file>
             <file>file:/E:/NetBeansProjects/test/server.h</file>
             <file>file:/E:/NetBeansProjects/test/simple_collector.h</file>
+            <file>file:/E:/NetBeansProjects/test/protocol.cpp</file>
+            <file>file:/E:/NetBeansProjects/test/pakcet.cpp</file>
             <file>file:/E:/NetBeansProjects/test/socket_connection.cpp</file>
         </group>
     </open-files>

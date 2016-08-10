@@ -29,12 +29,12 @@ int
 TcpServer::parseEndpoint(string endpoint) {
     size_t n = endpoint.find(":");
     if(n == string::npos) {
-        return errcode::NET_ADDR;
+        return errcode::ERR_NET_ADDR;
     }
     this->ip = endpoint.substr(0, n);
     string port_str = endpoint.substr(n, string::npos);
     this->port = uint16_t(atoi(port_str.c_str()));
-    return errcode::OK;
+    return errcode::ERR_OK;
 }
 
 int 
@@ -43,7 +43,7 @@ TcpServer::makeSockAddr() {
     sockaddr_.sin_family = AF_INET;
     sockaddr_.sin_port = htons(port);
     sockaddr_.sin_addr.s_addr = inet_addr(ip.c_str());
-    return errcode::OK;
+    return errcode::ERR_OK;
 }
 
 int 
@@ -66,7 +66,7 @@ TcpServer::Server(string endpoint) {
 	int fd;
 	while(fd = accept(listenfd, NULL, NULL)) {
 		if(fd == -1) {
-			return errcode::ERRNO;
+			return errcode::ERR_ERRNO;
 		}
 		depatcher->Depatch(fd);
 	}
