@@ -13,28 +13,32 @@
 
 #ifndef PTRBUF_H
 #define PTRBUF_H
+#include <stdlib.h>
+#include <string.h>
 #include "config.h"
+#include "ibuffer.h"
 
 #define PTRBUF_SIZE (sizeof(void*))
 
-class PtrBuf {
+class PtrBuf: public IBuffer {
 public:
 	PtrBuf(void* ptr=NULL);
+	virtual ~PtrBuf(){}
 	IOState Doio(int fd){
 		if(type_ == OP_Read) 
 			return Read(fd);
 		else
 			return Write(fd);
 	}
-	IOState Read(int fd);
-	IOState Write(int fd);
+	virtual IOState Read(int fd);
+	virtual IOState Write(int fd);
 	void* Unwarp() { 
 		void* ptr = NULL; 
 		memcpy(&ptr, buf_, PTRBUF_SIZE); 
 		return ptr;
 	}
 private:
-	OpType type_;
+	Optype type_;
 	char buf_[PTRBUF_SIZE];
 	char *op_base_;
 	int op_size_;

@@ -13,11 +13,10 @@
 #include "error.h"
 #include "logger.h"
 
-Packet::Packet()
-	:size_(0), data_(std::vector<char>(0)), optype_(OP_NONE) 
+Packet::Packet(Optype type)
+	:size_(0), data_(std::vector<char>(0)), optype_(type) 
 {
-	op_size_ = 0;
-	op_base_ = &header_.bytes[0];
+	resetBaseAndSize_();
 }
 
 /*const char * Packet::Errstr(State s) {
@@ -43,8 +42,8 @@ IOState Packet::Read(int fd) {
 			int nread = HEADER_SIZE - op_size_;
 			ret = read(fd, op_base_, nread);
 			if(ret < 0) {
-				if(ret == EINTR) continue;
-				if(ret == EAGAIN) {
+				if(errno == EINTR) continue;
+				if(errno == EAGAIN) {
 					break;
 				} else {
 					return IO_Errno;
@@ -73,8 +72,8 @@ IOState Packet::Read(int fd) {
 			int nread = size_ - op_size_;
 			ret = read(fd, op_base_, nread);
 			if(ret < 0) {
-				if(ret == EINTR) continue;
-				if(ret == EAGAIN) {
+				if(errno == EINTR) continue;
+				if(errno == EAGAIN) {
 					break;
 				} else {
 					return IO_Errno;
@@ -94,14 +93,14 @@ IOState Packet::Read(int fd) {
 }
 
 //fd必须nonblock
-Packet::State Packet::Write(int fd) {
+IOState Packet::Write(int fd) {
 	int ret = 0;
 	while(op_size_ < size_) {
 		int nwrite = size_ - op_size_;
 		ret = write(fd, op_base_, nwrite);
 		if(ret < 0) {
-			if(ret == EINTR) continue;
-			if(ret == EAGAIN) {
+			if(errno == EINTR) continue;
+			if(errno == EAGAIN) {
 				break;
 			} else {
 				return IO_Errno;

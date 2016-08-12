@@ -14,6 +14,12 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#if 1
+#define LOOK_MOD 
+#else
+#define CHANNEL_MOD
+#endif
+
 enum FdType {
 	FT_None = 0,
 	FT_Listen, 
@@ -27,9 +33,9 @@ enum FdType {
 };
 
 enum Optype {
-	OP_NONE=0, 
-	OP_READ, 
-	OP_WRITE
+	OP_None=0, 
+	OP_Read, 
+	OP_Write
 };
 
 enum IOState {

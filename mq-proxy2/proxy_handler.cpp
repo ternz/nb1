@@ -4,6 +4,7 @@
  * and open the template in the editor.
  */
 #include <stdlib.h>
+#include <unistd.h>
 #include <string>
 #include <string.h>
 #include <errno.h>
@@ -21,7 +22,7 @@
 using namespace std;
 
 ProxyHandler::ProxyHandler()
-	:w_pipe_(-1), run_(false)
+	:run_(false)
 {
     
 }
@@ -53,10 +54,10 @@ ProxyHandler::Init(string& selfaddr, string& targaddr) {
 	ret = Helper::SetNonblock(listenfd);
 	CHECK_ERRNO(ret);
 	
-	FdHandle* lst_fh = FHCreate();
-	lst_fh->fd = listenfd;
-	lst_fh->type = Lstsock;
-	ret = multiplexer_->Add(listenfd, MTP_EV_READ, lst_fh);
+	FdHandle* lst_fh = new FdHandle();
+	lst_fh->set_fd(listenfd);
+	lst_fh->set_type(FT_Listen);
+	ret = multiplexer_.Add(listenfd, MTP_EV_READ, lst_fh);
 	CHECK_ERRNO(ret);
 	
 	//target addr
@@ -85,12 +86,20 @@ ProxyHandler::Init(string& selfaddr, string& targaddr) {
 
 errcode ProxyHandler::AddPipe(int pipe) {
 	if(run_) return ERR_REFUSED;
-	w_pipes_.push_back(pipe);
-	ptrbufs_.push_back(NULL);
-	return multiplexer_.Add(pipe, MTP_EV_WRITE | MTP_EV_ET, NULL);
+	FdHandle *pipe_fh = new FdHandle();
+	pipe_fh->set_fd(pipe);
+	pipe_fh->set_type(FT_Pipe);
+	w_pipes_.push_back(pipe_fh);
+	//ptrbufs_.push_back(NULL);
+	return multiplexer_.Add(pipe, MTP_EV_WRITE | MTP_EV_ET | MTP_EV_ONESHOT, NULL);
 }
 
-void* ProxyHandler::Loop() {
+void ProxyHandler::addInPipeQue(void* ptr) {
+	int index = uint64_t(ptr) % w_pipes_.size();
+	w_pipes_[index]->AddOutBuffer(new PtrBuf(ptr));
+}
+
+void ProxyHandler::Loop() {
 	int ready_fds = 0;
 	run_ = true;
 	while(run_) {
@@ -122,6 +131,15 @@ void* ProxyHandler::Loop() {
 						//break;
 						continue;
 					}
+					
+					int err;
+					
+					err = Helper::SetNonblock(new_conn);
+					if(err < 0) {
+						LOG_ERROR<<"fd "<<new_conn<<" set nonblock error: "<<errstr(ERR_ERRNO)<<"\n";
+						continue;
+					}
+					
 					FdHandle* ps_fh = new FdHandle();
 					ps_fh->set_fd(new_conn);
 					ps_fh->set_type(FT_Sock_S);
@@ -129,11 +147,11 @@ void* ProxyHandler::Loop() {
 					//proxy connect to broker as a client
 					int cfd = socket(AF_INET, SOCK_STREAM, 0);
 					if(cfd < 0) {
-						LOG_ERROR<<"create socket error: "<<errstr(ERR_ERRNO)<<"\n";
+						LOG_ERROR<<"fd "<<cfd<<" set nonblock error: "<<errstr(ERR_ERRNO)<<"\n";
 						delete ps_fh;
 						continue;
 					}
-					int err = Helper::SetNonblock(cfd);
+					err = Helper::SetNonblock(cfd);
 					if(err < 0) {
 						LOG_ERROR<<"fd set nonblock error: "<<errstr(ERR_ERRNO)<<"\n";
 						delete ps_fh;
@@ -152,19 +170,20 @@ void* ProxyHandler::Loop() {
 					pc_fh->set_fd(cfd);
 					pc_fh->set_type(FT_Sock_C);
 
-					ps_fh->set_partner(&pc_fh);
-					pc_fh->set_partner(&ps_fh);
+					//互粉
+					ps_fh->set_partner(pc_fh);
+					pc_fh->set_partner(ps_fh);
 
-					if(0 == err) { //TODOOOOOOOOOOOOOOOOOOOOO
+					if(0 == err) { 
 						//连接已完成,注册与client端连接socket可读事件
 						LOG_DEBUG<<"connection establish at once\n";
-						FHPair pair = new FHPair(ps_fh, pc_fh);
-						ptr_que_.push(pair);
+						FHPair *pair = new FHPair(ps_fh, pc_fh);
+						addInPipeQue(pair);
 					} else {
 						//LOG_DEBUG<<pc_fh->fd<<" is connecting\n";
 						pc_fh->set_type(FT_Connecting);
 						//注册与broker端连接socket可读可写事件
-						tmultiplexer_.Add(pc_fh->fd(), 
+						multiplexer_.Add(pc_fh->fd(), 
 							MTP_EV_READ | MTP_EV_WRITE | MTP_EV_ONESHOT, pc_fh);
 					}
 
@@ -180,36 +199,43 @@ void* ProxyHandler::Loop() {
 					if(getsockopt(fh->fd(), SOL_SOCKET, SO_ERROR, &error, &len) < 0 || error != 0) {
 						if(error !=0) errno = error;
 						LOG_ERROR<<"connect to broker error: "<<strerror(errno)<<"\n";
-						DELETE_PAIR(fh);
+						ClearFHPair(fh);
 					} else {
 						LOG_DEBUG<<fh->fd()<<" connection ok\n";
 						//connection ok
 						multiplexer_.Remove(fh->fd());
-						fh->set_type(FT_SOCK_C);
-						FHPair pair = new FHPair(fh->partner(), fh);
-						ptr_que_.push(pair);
+						fh->set_type(FT_Sock_C);
+						FHPair *pair = new FHPair(fh->partner(), fh);
+						//加入pipe队列等待写入pipe
+						addInPipeQue(pair);
 					}
 				} else {
 					//不太可能执行到这里
 					LOG_ERROR<<"1?unknown error\n";
-					DELETE_PAIR(fh);
+					ClearFHPair(fh);
 				}
 			} else if(fh->type() == FT_Pipe) {
-				LOG_DEBUG<<fh->fd<<" is readable and writable\n";
-				//if(fh->state == S_None)
-				fh->state = ReadWrite;
-				th->que_->Push(fh);
+				LOG_DEBUG<<"pipe event occur\n";
+				continue;
+				//TODO what s the better solution
 			
-			} else if(ev->events & MTP_EV_ERR) {
-				LOG_ERROR<<"MTP_IO_ERR occur\n";
-				FHDestory(fh);
 			} else {
 				LOG_ERROR<<"undefind handler for event"<<ev->events<<"\n";
-				FHDestory(fh);
+				ClearFHPair(fh);
 			}
 		}
+		writeAllPipes();
 	}
 }
 
-
+void ProxyHandler::writeAllPipes() {
+	IOState state;
+	for(int i=0; i<w_pipes_.size(); ++i) {
+		FdHandle *fh = w_pipes_[i];
+		state = fh->DoWrite();
+		if(state == IO_Again) {
+			multiplexer_.Modify(fh->fd(), MTP_EV_WRITE | MTP_EV_ONESHOT, fh);
+		}
+	}
+}
 

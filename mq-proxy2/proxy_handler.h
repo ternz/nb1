@@ -20,15 +20,15 @@
 #include <arpa/inet.h>
 #include <queue>
 #include <vector>
+#include <memory>
 
 #include "error.h"
-#include "tsqueue.h"
+//#include "tsqueue.h"
 #include "fdhandle.h"
 #include "multiplexer.h"
 #include "ptrbuf.h"
 
 #define ACCP_QU 32
-#define 
 
 class ProxyHandler {
 public:
@@ -47,18 +47,18 @@ private:
     uint16_t broker_port_;
 	struct sockaddr_in broker_addr_;
     
-	std::vector<int> w_pipes_;
-	std::vector<PtrBuf*> ptrbufs_;
-	std::queue<void*> ptr_que_;
+	std::vector<FdHandle*> w_pipes_;
+	//std::vector<PtrBuf*> ptrbufs_;
+	//std::queue<void*> ptr_que_;
 	
 	bool run_;
 	
 	Multiplexer multiplexer_;
 	
 	//static void* threadFunc_(void* arg);
-	size_t chosePipe(void* ptr) {
-		return uint64_t(ptr) % w_pipes.size();
-	}
+	void addInPipeQue(void* ptr);
+	void writeAllPipes();
+	
 };
 
 

@@ -37,9 +37,11 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 OBJECTFILES= \
 	${OBJECTDIR}/error.o \
 	${OBJECTDIR}/fdhandle.o \
+	${OBJECTDIR}/io_processor.o \
 	${OBJECTDIR}/main.o \
 	${OBJECTDIR}/multiplexer.o \
 	${OBJECTDIR}/packet.o \
+	${OBJECTDIR}/processor.o \
 	${OBJECTDIR}/proxy_handler.o \
 	${OBJECTDIR}/ptrbuf.o
 
@@ -78,6 +80,11 @@ ${OBJECTDIR}/fdhandle.o: fdhandle.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/fdhandle.o fdhandle.cpp
 
+${OBJECTDIR}/io_processor.o: io_processor.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/io_processor.o io_processor.cpp
+
 ${OBJECTDIR}/main.o: main.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
@@ -92,6 +99,11 @@ ${OBJECTDIR}/packet.o: packet.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/packet.o packet.cpp
+
+${OBJECTDIR}/processor.o: processor.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/processor.o processor.cpp
 
 ${OBJECTDIR}/proxy_handler.o: proxy_handler.cpp 
 	${MKDIR} -p ${OBJECTDIR}

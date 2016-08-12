@@ -19,27 +19,30 @@
 #include <stdint.h>
 
 #include "error.h"
+#include "config.h"
+#include "ibuffer.h"
 
 #define MAX_PACKET_SIZE 65535
 #define HEADER_SIZE 4
 
-class Packet {
-	IOState Read(int fd) = 0;
-	IOState Write(int fd) = 0;
-};
+class IOProcessor;
 
-class Packet {
+class Packet:public IBuffer {
 public:
-	Packet();
+	explicit Packet(Optype type=OP_Read);
 	//static const char* Errstr(IOState s);
+	virtual ~Packet(){}
 	
 	void set_optype(Optype type);
 	Optype optype() {return optype_;}
 	int size() {return size_;}
 	
+	
 	//出错返回-1, IO全部完成返回0, 部分完成返回1
-	IOState Read(int fd);
-	IOState Write(int fd);
+	virtual IOState Read(int fd);
+	virtual IOState Write(int fd);
+	
+	friend class IOProcessor;
 	
 private:
 	union Header {
@@ -54,6 +57,14 @@ private:
 	
 	char *op_base_;
 	int op_size_;
+
+	void resetBaseAndSize_() {
+		op_size_ = 0;
+		if(optype() == OP_Read) 
+			op_base_ = &(header_.bytes[0]);
+		else 
+			op_base_ = &(data_[0]);
+	}
 };
 
 

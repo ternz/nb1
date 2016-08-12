@@ -3,7 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+#include <unistd.h>
+#include <errno.h>
 #include "ptrbuf.h"
+#include "config.h"
 
 PtrBuf::PtrBuf(void* ptr) {
 	if(ptr == NULL) {
@@ -22,8 +25,8 @@ IOState PtrBuf::Read(int fd) {
 	while((n = remainSize()) > 0) {
 		ret = read(fd, op_base_, n);
 		if(ret < 0) {
-			if(ret == EINTR) continue;
-			if(ret == EAGAIN) {
+			if(errno == EINTR) continue;
+			if(errno == EAGAIN) {
 				break;
 			} else {
 				return IO_Errno;
@@ -46,8 +49,8 @@ IOState PtrBuf::Write(int fd) {
 	while((n = remainSize()) > 0) {
 		ret = write(fd, op_base_, n);
 		if(ret < 0) {
-			if(ret == EINTR) continue;
-			if(ret == EAGAIN) {
+			if(errno == EINTR) continue;
+			if(errno == EAGAIN) {
 				break;
 			} else {
 				return IO_Errno;

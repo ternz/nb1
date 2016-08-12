@@ -13,13 +13,17 @@
 
 #ifndef FDHANDLE_H
 #define FDHANDLE_H
+#include <stdlib.h>
+#include <string.h>
 #include <queue>
 #include <memory>
+#include "config.h"
+#include "error.h"
 #include "packet.h"
+#include "ptrbuf.h"
+#include "ibuffer.h"
 
 #define OUT_QUE_SIZE 32
-
-#define DELETE_PAIR(fh) delete (fh)->partner(); delete (fh)
 
 class FdHandle {
 public:
@@ -28,28 +32,39 @@ public:
 	
 	void set_fd(int fd) {fd_ = fd;}
 	int fd(){return fd_;}
+	
 	void set_type(FdType t){type_ = t;}
 	FdType type(){return type_;}
-	void set_partner(FdHandle** ppfh) {partner_ = ppfh;}
-	FdHandle* partner() {return *partner_;}
+	
+	void set_partner(FdHandle* ppfh) {partner_ = ppfh;}
+	FdHandle* partner() {
+		//if(partner_ == NULL) return NULL;
+		return partner_;
+	}
+	FdHandle* partner2();
+	
 	bool IsOutable() {return out_que_.size() < max_out_que_size_;}
-	void AddOutPacket(Packet* pack) {out_que_.push(pack);}
+	bool hasDataOut() { return !out_que_.empty(); }
+	void AddOutBuffer(IBuffer* pack) {out_que_.push(pack);}
 	
 	//读完一个完整的数据包返回IO_Done, 否则返回IO_Again
 	IOState DoRead();
-	Packet* ReleaseReadPacket();
+	IBuffer* ReleaseReadBuffer();
 	
 	//写完队列里全部数据返回IO_Done, 否则返回IO_Again
 	IOState DoWrite();
 	
+	friend void ClearFHPair(FdHandle* fh);
+	
+	
 private:
 	int fd_;
 	FdType type_;
-	Packet* data_in_save_;
-	Packet* data_out_save_;
-	std::queue<Packet* > out_que_;
-	FdHandle** partner_;
+	IBuffer* data_in_save_;
+	IBuffer* data_out_save_;
+	FdHandle* partner_;
 	const int max_out_que_size_;
+	std::queue<IBuffer* > out_que_;
 };
 
 struct FHPair {

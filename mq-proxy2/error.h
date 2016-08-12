@@ -13,6 +13,9 @@
 
 #ifndef ERROR_H
 #define ERROR_H
+#include <errno.h>
+#include <string.h>
+#include "config.h"
 
 #define CHECK_ERRNO(ret) \
      do { if((ret) < 0) {return ERR_ERRNO;} } while(0)
@@ -29,6 +32,7 @@ enum errcode {
 };
 
 const char * errstr(errcode code);
+const char * ioerrstr(IOState state);
 
 #endif /* ERROR_H */
 

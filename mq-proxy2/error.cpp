@@ -21,3 +21,20 @@ const char *errstr(errcode code) {
             return "unkonwn error";
     }
 }
+
+const char * ioerrstr(IOState state) {
+	switch(state) {
+        case IO_HeaderErr:
+            return "header error";
+        case IO_Errno:
+            return strerror(errno);
+		case IO_Done:
+			return "ok, done";
+		case IO_Again:
+			return "ok, again";
+		case IO_SockOff:
+			return "ok, socket off";
+        default:
+            return "unkonwn error";
+    }
+}
