@@ -18,7 +18,13 @@ const (
 	READ = 1
 	WRITE = 2
 	READ_WRITE = 3
+	
+	ten_p_6 = 1000000
+	ten_p_9 = 1000000000
 )
+
+var file_no uint64 = 0
+var read_n int = 0
 
 type Record struct {
 	TimeBegin	int64
@@ -26,6 +32,7 @@ type Record struct {
 	DataSize	uint32
 	Type		int	//1 for read, 2 for write
 	Err			error
+	Obj			string
 }
 
 func (r *Record) DataSizeStr() string {
@@ -56,7 +63,7 @@ func (r *Record) DurationTime() int64 {
 }
 
 func (r *Record) DurationTimeStr() string {
-	t := float64(r.DurationTime()) / 1000000
+	t := float64(r.DurationTime()) / ten_p_6
 	return fmt.Sprintf("%.2fms", t)
 }
 
@@ -91,7 +98,7 @@ func (s *Statistics) Add(dataSize uint64, dur int64) {
 }
 
 func (s *Statistics) AvgDurS() float64 {
-	return s.AvgDur / 1000000000
+	return s.AvgDur / ten_p_9
 }
 
 func (s *Statistics) TotalDur() int64 {
@@ -99,7 +106,7 @@ func (s *Statistics) TotalDur() int64 {
 }
 
 func (s *Statistics) TotalDurS() float64 {
-	return float64(s.TotalDur()) / 1000000000
+	return float64(s.TotalDur()) / ten_p_9
 }
 
 func (s *Statistics) IOPS() float64 {
@@ -140,13 +147,16 @@ func CreateChunk1(size int) []byte {
 } 
 
 //new
-func Read(file string) {
+func Read(bucket, file string) {
 	r := &Record{}
 	r.Type = READ
+	r.Obj = file
 	
 	r.TimeBegin = time.Now().UnixNano()
-	b, _ := client.GetObject(bucket, file)
+	b, err := client.GetObject(bucket, file)
 	r.TimeEnd = time.Now().UnixNano()
+	
+	r.Err = err
 	
 	r.DataSize = uint32(len(b))
 	RecordChan <- r
@@ -154,27 +164,37 @@ func Read(file string) {
 
 func DoReadTest(c *Config) {
 	for i:=0; i<c.LoopNum; i++ {
-		go ReadLoop(c.ReadFile)
+		go ReadLoop(c.Bucket, c.ReadFileList)
 	}
 }
 
-func ReadLoop(file string) {
+func ReadLoop(bucket string, files []string) {
+	
 	wg.Add(1)
 	defer wg.Done()
 	for run {
-		Read(file)
+		a := read_n
+		if a >= len(files) {
+			a = 0
+			read_n = 0
+		} else {
+			read_n += 1
+		}
+		Read(bucket, files[a])
 	}
 }
 
 func Write(b []byte, bucket, obj string, check_md5 bool) {
 	r := &Record{}
 	r.Type = WRITE
+	r.Obj = obj
 	r.DataSize = uint32(len(b))
 	str_b := string(b)
 	
 	r.TimeBegin = time.Now().UnixNano()
-	client.PutObject(bucket, obj, &str_b, check_md5)
+	err := client.PutObject(bucket, obj, &str_b, check_md5)
 	r.TimeEnd = time.Now().UnixNano()
+	r.Err = err
 	RecordChan <- r
 }
 
@@ -187,10 +207,15 @@ func DoWriteTest(c *Config) {
 }
 
 func WriteLoop(b []byte, c *Config) {
+	
+	var file_name string
+	
 	wg.Add(1)
 	defer wg.Done()
 	for run {
-		Write(b, c.Bucket, c.WriteFile, c.Checkmd5)
+		file_no++
+		file_name = fmt.Sprintf("%s%d.txt", c.WriteFile, file_no)
+		Write(b, c.Bucket, file_name, c.Checkmd5)
 	}
 }
 
@@ -231,6 +256,10 @@ func ReadWriteLoop(wb []byte, c *Config) {
 	cards := make([]int8, wrl)
 	cards_remain := 0
 	
+	
+	
+	var file_name string
+	
 	wg.Add(1)
 	defer wg.Done()
 	for run {
@@ -240,16 +269,33 @@ func ReadWriteLoop(wb []byte, c *Config) {
 		}
 		cards_remain -= 1
 		if cards[cards_remain] == READ {
-			Read(c.ReadFile)
+			a := read_n
+			if a >= len(c.ReadFileList) {
+				a = 0
+				read_n = 0
+			} else {
+				read_n += 1
+			}
+			Read(c.Bucket, c.ReadFileList[a])
+
 		} else {
-			Write(wb, c.Bucket, c.WriteFile, c.Checkmd5)
+			file_no++
+			file_name = fmt.Sprintf("%s%d.txt", c.WriteFile, file_no)
+			Write(wb, c.Bucket, file_name, c.Checkmd5)
 		}
 	}
 }
 
 func HandleRecord(r *Record) {
 	statis.Add(uint64(r.DataSize), r.DurationTime())
-	fmt.Printf("%s data size: %s duration: %s\n", r.TypeStr(), r.DataSizeStr(), r.DurationTimeStr())
+	time_str := time.Unix(r.TimeEnd / ten_p_9, r.TimeEnd % ten_p_9).Format("2006-01-02 15:04:05")
+	if r.Err != nil {
+		fmt.Printf("[%s] %s size:%s duration:%s file:%s ERROR:%s  \n",
+			time_str, r.TypeStr(), r.DataSizeStr(), r.DurationTimeStr(), r.Obj, r.Err.Error())
+	} else {
+		fmt.Printf("[%s] %s size:%s duration:%s file:%s\n",
+			time_str, r.TypeStr(), r.DataSizeStr(), r.DurationTimeStr(), r.Obj)
+	}
 }
 
 func StatisticsLoop() {

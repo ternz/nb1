@@ -6,10 +6,10 @@ import (
 	"common/rgw_client/sign"
 )
 
-var endpoint = "http://172.20.1.10:7480"	
+var endpoint = "http://172.20.1.10:17480"	
 var auth = sign.Auth{"IGAJ9M9V8MA5UE503HZE","CwcGOZokDqdPcBhxkWxmvIyJLA79DP3ycCxHkGhO"}
-var bucket = "ct_test_bucket_1"
-var obj_file = "ct_file1.txt"
+//var bucket = "ct_test_bucket_1"
+//var obj_file = "ct_file1.txt"
 
 var client *rgw_client.RgwClient
 
@@ -24,6 +24,8 @@ func InitRgwClient(c *Config) {
 	}
 	if c.Endpoint == "" {
 		client.Endpoint = endpoint
+	} else {
+		client.Endpoint = c.Endpoint
 	}
 	
 	err := client.CreateBucket(c.Bucket)
@@ -50,5 +52,7 @@ type Config struct {
 	
 	Bucket		string
 	WriteFile	string
-	ReadFile	string
+	//ReadFile	string
+	
+	ReadFileList []string
 }
